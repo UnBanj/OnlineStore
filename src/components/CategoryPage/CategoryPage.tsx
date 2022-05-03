@@ -25,6 +25,7 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
 
         this.state = {};
      }
+    
 
      render(){
         return (

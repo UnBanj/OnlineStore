@@ -33,6 +33,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <HashRouter>
   <React.StrictMode>
+   
     <MainMenu items={ menuItems}></MainMenu>
        <Switch>
          <Route exact path="/" component={ HomePage}/>
@@ -40,8 +41,9 @@ root.render(
          <Route  path="/user/login" component={ UserLoginPage} />
          <Route path="/category/:cId" component={ CategoryPage } />
         </Switch> 
+      
     </React.StrictMode>
-  </HashRouter>
+    </HashRouter> 
 );
 
 
