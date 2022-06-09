@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Col, Container, Row } from 'react-bootstrap';
 import { faListAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import CategoryType from '../../types/CategoryFile';
+import CategoryType from '../../types/CategoryType';
 import { Redirect } from 'react-router';
 import { Link } from 'react-router-dom';
 import api, { ApiResponse } from '../../api/api';
@@ -41,7 +41,7 @@ class HomePage extends React.Component {
   }
 
  private getCategories(){
-    api('api/category/','get', {})
+    api('api/category/ ','get', {})
     .then((res: ApiResponse) => {
        if(res.status === "error" || res.status === "login"){
          this.setLogginState(false);
@@ -53,8 +53,8 @@ class HomePage extends React.Component {
  }
 
  private putCategoriesInState(data: ApiCategoryDto[]){
-   const categories: CategoryType[] = data.map(category=>{
-      return {
+   const categories: CategoryType[] = data?.map(category=>{
+      return { //za svaku ucitanu kateg vracamo jedan objekat
         categoryId: category.categoryId,
         name: category.name,
         items: [], //ovde jos uvek ne znamo sta je items
@@ -80,8 +80,10 @@ class HomePage extends React.Component {
  render() {
    if(this.state.isUserLoggedIn === false) {
      return (
-       <Redirect to="/user/login/" />
+      
+       <Redirect to="/user/login" />
      );
+     
    }
 
   return (

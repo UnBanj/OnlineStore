@@ -2,8 +2,9 @@ import { faListAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Card, Container } from "react-bootstrap";
-import CategoryType from "../../types/CategoryFile";
-
+import CategoryType from "../../types/CategoryType";
+import api, { ApiResponse } from "../../api/api";
+import ArticleType from "../../types/ArticleType";
 
 interface CategoryPageProperties {
    match: {
@@ -14,7 +15,10 @@ interface CategoryPageProperties {
 }
 
 interface CategoryPageState {
+    isUserLoggedIn: boolean;
     category?: CategoryType;
+    subcategories?: CategoryType[];
+    articles?: ArticleType[];
 }
 
 export default class CategoryPage extends React.Component<CategoryPageProperties> {
@@ -23,14 +27,16 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
     constructor (props: Readonly<CategoryPageProperties>)  {
         super(props);
 
-        this.state = {};
+        this.state = {
+            isUserLoggedIn: true,
+        };
      }
     
 
      render(){
         return (
             <Container>
-            <Card>
+              <Card>
                 <Card.Body>
                     <Card.Title>
                         <FontAwesomeIcon icon={ faListAlt }/> { this.state.category?.name }
@@ -57,16 +63,9 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
      }
 
      private getCategoryData() {
-        setTimeout(()=> {
-            const data: CategoryType = {
-                name: 'Category: ' + this.props.match.params.cId,
-                categoryId: this.props.match.params.cId,
-                items: []
-            };
-
-            this.setState({
-                category: data,
-            });
-        },750);
+       api('api/category/' + this.props.match.params.cId, 'get', {})
+        .then((res: ApiResponse)=> {
+               
+        })
      }
 }

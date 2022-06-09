@@ -99,7 +99,6 @@ export default class UserLoginPage extends React.Component {
 
         return (
             <Container>
-              
                 <Col md={ { span: 6, offset: 3 } }>
                     <Card>
                         <Card.Body>
