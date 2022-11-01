@@ -16,6 +16,7 @@ import { UserRegistrationPage } from './components/UserRegistrationPage/UserRegi
 import OrderPage from './components/OrderPage/OrderPage';
 import AdministratorLoginPage from './components/AdministratorLoginPage/AdministratorLoginPage';
 import AdministratorDashboard from './components/AdministratorDashboard/AdministratorDashboard';
+import AdministratorDashboardCategory from './components/AdministratorDashboardCategory/AdministratorDashboardCategory';
 
 
 const root = ReactDOM.createRoot(
@@ -33,7 +34,8 @@ root.render(
          <Route path="/category/:cId" component={ CategoryPage } />
          <Route path="/user/orders/" component={ OrderPage } />
          <Route path="/administrator/login" component={ AdministratorLoginPage} />
-         <Route path="/administrator/dashboard" component={ AdministratorDashboard} />
+         <Route exact path="/administrator/dashboard/" component={ AdministratorDashboard} />
+         <Route path="/administrator/dashboard/category/" component={ AdministratorDashboardCategory}/>
         </Switch> 
       
     </React.StrictMode>

@@ -1,6 +1,7 @@
 
 export default class CategoryType {
-    categoryId?: number; //? pored imena znaci da ne mora da bude setovan
+    categoryId?: number; 
     name?: string;
+    parentCategoryId?: number | null ;
    
 }
