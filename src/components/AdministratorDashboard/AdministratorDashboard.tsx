@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { Redirect } from 'react-router';
 import api, { ApiResponse, getIdentity } from '../../api/api';
+import RoledMainMenu from '../RoledMainMenu/RoledMainMenu';
 
 
 
@@ -64,6 +65,8 @@ class AdministratorDashboard extends React.Component {
 
   return (
         <Container>
+              <RoledMainMenu role="administrator"/>
+
               <Card>
                 <Card.Body>
                     <Card.Title>
