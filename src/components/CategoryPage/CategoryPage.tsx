@@ -8,6 +8,7 @@ import ArticleType from "../../types/ArticleType";
 import { Redirect } from "react-router";
 import { Link } from "react-router-dom";
 import { ApiConfig } from "../../config/api.config";
+import SingleArticlePreview from "../SingleArticlePreview/SingleArticlePreview";
 
 interface CategoryPageProperties {
    match: {
@@ -28,7 +29,16 @@ interface CategoryPageState {
       priceMinimum: number;
       priceMaximum: number;
       order: "name asc" | "name desc" | "price asc" | "price desc";
+      selectedFeatures: {
+          featureId: number;
+          value: string;
+      }[];
     };
+    features: {
+      featureId: number;
+      name: string;
+      values: string[];
+    }[];
 }
 
 interface CategoryDto {
@@ -63,10 +73,21 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
                 keywords: '',
                 priceMinimum: 0.01,
                 priceMaximum: 100000,
-                order: "price asc"
-            }
+                order: "price asc",
+                selectedFeatures: [],
+            },
+            features: [],//polazna pretpostavka je da nece biti dostavljen nijedan feature
+
         };
      }
+
+     private setFeatures(features: any ){
+        const newState = Object.assign(this.state, {
+           features: features,
+        });
+
+        this.setState(newState);
+    }
 
      private setLogginState(isLoggedIn: boolean){
          const newState = Object.assign(this.state, {
@@ -148,7 +169,7 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
      private setNewFilter(newFilter: any){
          this.setState(Object.assign(this.state, {
              filter: newFilter,
-         }))
+         }));
      }
 
      private filterKeywordsChanged(event: React.ChangeEvent<HTMLInputElement>){
@@ -174,6 +195,45 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
            order: event.target.value,
        }));
      }
+
+     private featureFilterChanged(event: React.ChangeEvent<HTMLInputElement>) {
+         const featureId = Number(event.target.dataset.featureId);
+         const value = event.target.value;
+
+         if(event.target.checked){
+           this.addFeatureFilterValue(featureId, value);
+         } else {
+           this.removeFeatureFilterValue(featureId, value);
+         }
+    }
+
+    private addFeatureFilterValue(featureId: number, value: string){
+       const newSelectedFeatures = [... this.state.filters.selectedFeatures];//kopija starog selectedFeatures
+       newSelectedFeatures.push({ //u koji dodajemo novi record   
+          featureId: featureId,
+          value: value
+       });
+
+       this.setSelectedFeatures(newSelectedFeatures);
+    }
+    
+    private removeFeatureFilterValue(featureId: number, value: string){//trazimo sve one koji ne odgovaraju filteru(nemaju istu vrednost featureId sa ovim featureId)
+        const newSelectedFeatures = this.state.filters.selectedFeatures.filter(record=> {//filter uzima jedan po jedan record(zapis)
+             return !(record.featureId === featureId && record.value === value)
+        });//vrati rezultat negacije ovog filtriranja
+      
+        this.setSelectedFeatures(newSelectedFeatures);
+    }
+
+    private setSelectedFeatures(newSelectedFeatures: any){
+        this.setState(Object.assign(this.state, {//setujemo stanje tako sto uzmemo staro stanje
+            filters: Object.assign(this.state.filters, {//zamenimo njegov filters novim 
+                selectedFeature: newSelectedFeatures,//unutar kojeg zamenimo samo selectedFilters vrednost
+            })
+        }));
+
+        console.log(this.state);
+    }
 
      private printFilters(){
          return (
@@ -213,6 +273,8 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
                    </Form.Control>
                </Form.Group>
                
+               { this.state.features.map(this.printFeatureFilterComponent, this) }
+               
                <Form.Group>
                    <Button variant="primary" onClick={ () => this.applyFilters()}>
                        <FontAwesomeIcon icon={ faSearch }/> Search
@@ -222,9 +284,29 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
              </>
          );
 
-              
+             
      }
 
+     private printFeatureFilterComponent(feature: { featureId: number; name: string; values: string[];}){
+        return (
+            <Form.Group>
+                <>
+                <Form.Label><strong>{ feature.name }</strong></Form.Label>
+                { feature.values.map(value => this.printFeatureFilterCheckbox(feature, value), this) }
+                </>
+            </Form.Group>
+        );  
+     }
+
+     private printFeatureFilterCheckbox(feature:any, value: string){
+        return(
+            <Form.Check type="checkbox" label={ value }
+                        value = {value}
+                        data-feature-id = {feature.featureId}
+                        onChange = {(e)=> this.featureFilterChanged(e as any)}/>
+        )
+     }
+    
      private applyFilters(){
          this.getCategoryData();
      }
@@ -245,35 +327,8 @@ export default class CategoryPage extends React.Component<CategoryPageProperties
 
      private singleArticle(article: ArticleType){
          return (
-            <Col lg="4" md="6" sm="6" xs="12">
-              <Card className="mb-3">
-                <Card.Header>
-                     <img alt= {article.name}
-                          src={ ApiConfig.PHOTO_PATH  + article.imageUrl}
-                          className="w-100"/>
-                </Card.Header>
-                <Card.Body>
-                <Card.Title as="p">
-                  <strong>{ article.name }</strong>
-                </Card.Title>
-                <Card.Text>
-                    {
-                      article.excerpt  
-                    }
-                </Card.Text>
-                <Card.Text>
-                     Price: { Number(article.price).toFixed(2) } EUR
-                    
-                </Card.Text>
-                <Link to={ `/article/${article.articleId}`}
-                  className="btn btn-primary btn-block btn-sm">
-                Open article page
-                </Link>
-                </Card.Body>
-  
-               </Card>
-            </Col>
-       );
+            <SingleArticlePreview article={article} />
+         );
      }
 
      private printOptionalMessage(){
@@ -367,12 +422,36 @@ private singleCategory(category: CategoryType){
         const orderBy = orderParts[0];
         const orderDirection = orderParts[1].toUpperCase();
 
+        const featureFilters: any[] = [ ];
+
+        for(const item of this.state.filters.selectedFeatures){
+            let found = false;//polazna pret da ne postoji 
+            let foundRef = null;
+
+            for(const featureFilter of featureFilters){
+                if(featureFilter.featureId === item.featureId){
+                    found = true;
+                    foundRef = featureFilter;
+                    break;
+                }
+            }
+            //ako ne postoji
+            if(!found){
+                featureFilters.push({//dodajemo jedan novi zapis
+                   featureId: item.featureId,
+                   values: [ item.value ],
+                });
+            } else {
+                foundRef.values.push(item.value);
+            }
+        }
+
         api('api/article/search/', 'post', {
             categoryId: Number(this.props.match.params.cId),
             keywords: this.state.filters.keywords,
             priceMin: this.state.filters.priceMinimum,
             priceMax: this.state.filters.priceMaximum,
-            features: [ ],
+            features: featureFilters,
             orderBy: orderBy,
             orderDirection: orderDirection,
         })
@@ -411,5 +490,23 @@ private singleCategory(category: CategoryType){
 
             this.setArticles(articles);
         });
+
+        this.getFeatures();
+     }
+
+     getFeatures(){
+         api('api/feature/values/'+ this.props.match.params.cId, 'get',{})
+         .then((res:ApiResponse) => {
+             if(res.status === 'login'){//ukoliko je dobio login error ponovo ulogovati korisnika
+                return this.setLogginState(false);
+             }
+
+             if(res.status === 'error'){//neki drugi error
+                 return this.setMessage('Request error.Please try to refresh the page.');
+             }
+
+             this.setFeatures(res.data.features);
+         });
+
      }
 }

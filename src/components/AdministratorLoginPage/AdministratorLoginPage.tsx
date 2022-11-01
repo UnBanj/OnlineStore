@@ -2,25 +2,25 @@ import React from 'react';
 import { Container, Card, Form, Button, Col, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignInAlt } from '@fortawesome/free-solid-svg-icons';
-import api, { ApiResponse, saveToken, saveRefreshToken } from '../../api/api';
+import api, { ApiResponse, saveToken, saveRefreshToken, saveIdentity } from '../../api/api';
 import { Redirect } from 'react-router-dom';
 
 
-interface UserLoginPageState {
-    email: string;
+interface AdministratorLoginPageState {
+    username: string;
     password: string;
     errorMessage: string;
     isLoggedIn: boolean;
 }
 
-export default class UserLoginPage extends React.Component {
-    state: UserLoginPageState;
+export default class AdministratorLoginPage extends React.Component {
+    state: AdministratorLoginPageState;
 
     constructor(props: Readonly<{}>) {
         super(props);
 
         this.state = {
-            email: '',
+            username: '',
             password: '',
             errorMessage: '',
             isLoggedIn: false,
@@ -53,10 +53,10 @@ export default class UserLoginPage extends React.Component {
 
     private doLogin() {
         api(
-            'auth/user/login',
+            'auth/administrator/login',
             'post',
             {
-                email: this.state.email,
+                username: this.state.username,
                 password: this.state.password,
             }
         )
@@ -72,7 +72,7 @@ export default class UserLoginPage extends React.Component {
                     let message = '';
 
                     switch (res.data.statusCode) {
-                        case -3001: message = 'Unknown e-mail!'; break;
+                        case -3001: message = 'Unknown username!'; break;
                         case -3002: message = 'Bad password!'; break;
                        
                     }
@@ -82,8 +82,9 @@ export default class UserLoginPage extends React.Component {
                     return;
                 }
                 //ako je status undefined
-                saveToken('user',res.data.token);
-                saveRefreshToken('user', res.data.refreshToken);
+                saveToken('administrator',res.data.token);
+                saveRefreshToken('administrator', res.data.refreshToken);
+                saveIdentity('administrator', res.data.identity);
 
                 this.setLogginState(true);//kada je user uspesno logovan
             }
@@ -93,7 +94,7 @@ export default class UserLoginPage extends React.Component {
     render() {
         if (this.state.isLoggedIn === true) {
             return (
-                <Redirect to="/" /> //ako je user ulogovan presmeri ga na homepage
+                <Redirect to="/administrator/dashboard" /> //ako je admin ulogovan presmeri ga na dashboard
             );
         }
 
@@ -103,13 +104,13 @@ export default class UserLoginPage extends React.Component {
                     <Card>
                         <Card.Body>
                             <Card.Title>
-                                <FontAwesomeIcon icon={ faSignInAlt } /> User Login
+                                <FontAwesomeIcon icon={ faSignInAlt } /> Administrator Login
                             </Card.Title>
                             <Form>
                                 <Form.Group>
-                                    <Form.Label htmlFor="email">E-mail:</Form.Label>
-                                    <Form.Control type="email" id="email"
-                                                    value={ this.state.email }
+                                    <Form.Label htmlFor="username">Username:</Form.Label>
+                                    <Form.Control type="text" id="username"
+                                                    value={ this.state.username }
                                                     onChange={ event => this.formInputChanged(event as any) } />
                                 </Form.Group>
                                 <Form.Group>

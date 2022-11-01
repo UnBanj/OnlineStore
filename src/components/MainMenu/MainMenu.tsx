@@ -1,6 +1,7 @@
 import React from "react";
-import { Nav } from "react-bootstrap";
+import { Container, Nav } from "react-bootstrap";
 import { HashRouter, Link } from "react-router-dom";
+import Cart from "../Cart/Cart";
 
 
 export class MainMenuItem {
@@ -40,11 +41,16 @@ export class MainMenu extends React.Component<MainMenuProperties> {
 
     render(){
         return (
-           <Nav variant="tabs">
-            <HashRouter>
+          <Container>
+             <Nav variant="tabs">
+               <HashRouter>
+                
                  { this.state.items.map(this.makeNavLink) }
-            </HashRouter>
-            </Nav>
+                <Cart />
+            
+               </HashRouter>
+             </Nav>
+         </Container>
         );   
     }
     //uzima 1 item i vraca reprezentaciju tog itema u obliku html koda
