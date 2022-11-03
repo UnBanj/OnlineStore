@@ -15,8 +15,8 @@ import CategoryPage from './components/CategoryPage/CategoryPage';
 import { UserRegistrationPage } from './components/UserRegistrationPage/UserRegistrationPage';
 import OrderPage from './components/OrderPage/OrderPage';
 import AdministratorLoginPage from './components/AdministratorLoginPage/AdministratorLoginPage';
-import AdministratorDashboard from './components/AdministratorDashboard/AdministratorDashboard';
-import AdministratorDashboardCategory from './components/AdministratorDashboardCategory/AdministratorDashboardCategory';
+import AdministratorDashboard from './components/AdministratorDashboardCategory/AdministratorDashboardCategory';
+import AdministratorDashboardCategory from './components/AdministratorDashboard/AdministratorDashboard';
 
 
 const root = ReactDOM.createRoot(
