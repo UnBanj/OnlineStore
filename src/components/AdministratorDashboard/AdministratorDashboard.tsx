@@ -1,20 +1,17 @@
 import React from 'react';
-import { Card, Container, Table} from 'react-bootstrap';
-import { faListAlt} from '@fortawesome/free-solid-svg-icons';
+import { Card, Container} from 'react-bootstrap';
+import { faHome} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { Redirect } from 'react-router';
-import api, { ApiResponse } from '../../api/api';
+import api, { ApiResponse} from '../../api/api';
 import RoledMainMenu from '../RoledMainMenu/RoledMainMenu';
-import CategoryType from '../../types/CategoryType';
-import ApiCategoryDto from '../../dtos/ApiCategoryDto';
-
+import { Link } from 'react-router-dom';
 
 
 
 interface AdministratorDashboardState {
   isAdministratorLoggedIn: boolean;
-  categories: CategoryType[];
 }
 
 
@@ -26,47 +23,28 @@ class AdministratorDashboard extends React.Component {
 
     this.state= {
       isAdministratorLoggedIn: true,
-      categories: [],
    
     };
    
   }
  
   componentWillMount(){
-    this.getCategories();
+    this.getMyData();
   }
 
   componentWillUpdate(){
-    this.getCategories();
+    this.getMyData();
   }
 
- private getCategories(){
-    api('/api/category/', 'get', {}, 'administrator')
+ private getMyData(){
+    api('/api/administrator/', 'get', {}, 'administrator')
     .then((res:ApiResponse) => {
         if(res.status === 'error' || res.status === 'login') {
             this.setLogginState(false);
             return;
         }
-      
-        this.putCategoriesInState(res.data);
-    });
- }
 
- private putCategoriesInState(data? : ApiCategoryDto[]){
-    const categories: CategoryType[] | undefined = data?.map(category => {
-        return {
-            categoryId: category.categoryId,
-            name: category.name,
-            parentCategoryId: category.parentCategoryId,
-            
-        };
     });
-
-    const newState = Object.assign(this.state, {
-      categories: categories,
-    });
-
-    this.setState(newState);
  }
 
  private setLogginState(isLoggedIn: boolean){
@@ -93,28 +71,16 @@ class AdministratorDashboard extends React.Component {
               <Card>
                 <Card.Body>
                     <Card.Title>
-                        <FontAwesomeIcon icon={ faListAlt }/> Categories
+                        <FontAwesomeIcon icon={ faHome }/> Administrator Dashboard
                     </Card.Title>
                     
-                    <Table hover size="sm" bordered>
-                      <thead>
-                        <tr>
-                          <td className='text-right'>ID</td>
-                          <td>Name</td>
-                          <td className='text-right'>Parent ID</td>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        { this.state.categories.map(category => (
-                          <tr>
-                             <td className="text-right">{ category.categoryId}</td>
-                             <td>{ category.name }</td>
-                             <td className='text-right'>{ category.parentCategoryId}</td>
-                          </tr>
-                        ), this )}
-                      </tbody>
-                    </Table>
-                                            
+                    <ul>
+                       <li><Link to="/administrator/dashboard/category/">Categories</Link></li>
+                       <li><Link to="/administrator/dashboard/feature/">Features</Link></li>
+                       <li><Link to="/administrator/dashboard/article/">Articles</Link></li>
+                      
+                    </ul>
+                        
                </Card.Body>
             </Card>
         </Container>
