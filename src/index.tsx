@@ -18,6 +18,8 @@ import AdministratorLoginPage from './components/AdministratorLoginPage/Administ
 import AdministratorDashboard from './components/AdministratorDashboardCategory/AdministratorDashboardCategory';
 import AdministratorDashboardCategory from './components/AdministratorDashboard/AdministratorDashboard';
 import AdministratorDashboardArticle from './components/AdministratorDashboardArticle/AdministratorDashboardArticle';
+import { AdministratorLogoutPage } from './components/AdministratorLogoutPage/AdministratorLogoutPage';
+import { UserLogoutPage } from './components/UserLogoutPage/UserLogoutPage';
 
 
 const root = ReactDOM.createRoot(
@@ -31,10 +33,12 @@ root.render(
          <Route exact path="/" component={ HomePage}/>
          <Route  path="/contact" component={ ContactPage} />
          <Route  path="/user/login" component={ UserLoginPage} />
+         <Route  path="/user/logout" component={ UserLogoutPage} />
          <Route  path="/user/register" component={ UserRegistrationPage} />
          <Route path="/category/:cId" component={ CategoryPage } />
          <Route path="/user/orders/" component={ OrderPage } />
          <Route path="/administrator/login" component={ AdministratorLoginPage} />
+         <Route path="/administrator/logout" component={ AdministratorLogoutPage} />
          <Route exact path="/administrator/dashboard/" component={ AdministratorDashboard} />
          <Route path="/administrator/dashboard/category/" component={ AdministratorDashboardCategory}/>
          <Route path="/administrator/dashboard/article" component={ AdministratorDashboardArticle} />

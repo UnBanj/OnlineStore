@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Button, Card, Container, Form, FormGroup, Modal, Table} from 'react-bootstrap';
+import { Alert, Button, Card, Col, Container, Form, FormGroup, Modal, Row, Table} from 'react-bootstrap';
 import { faEdit, faListAlt, faPlus} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -10,6 +10,8 @@ import ArticleType from '../../types/ArticleType';
 import ApiArticleDto from '../../dtos/ApiArticleDto';
 import CategoryType from '../../types/CategoryType';
 import ApiCategoryDto from '../../dtos/ApiCategoryDto';
+import { Settings } from 'http2';
+import { features } from 'process';
 
 
 
@@ -31,7 +33,9 @@ interface AdministratorDashboardArticleState {
     isPromoted: number;
     price: number;
     features:{
+      use: number;
       featureId: number;
+      name: string;
       value: string;
     }[];
   };
@@ -48,12 +52,18 @@ interface AdministratorDashboardArticleState {
     isPromoted: number;
     price: number;
     features:{
+      use:number;
       featureId: number;
+      name: string;
       value: string;
     }[];
   };
 }
 
+interface FeatureBaseType{
+  featureId: number;
+  name: string;
+}
 
 class AdministratorDashboardArticle extends React.Component {
   state: AdministratorDashboardArticleState;
@@ -101,6 +111,27 @@ class AdministratorDashboardArticle extends React.Component {
    
   }
 
+  private async getFeaturesByCategoryId(categoryId: number): Promise<FeatureBaseType[]> {
+  return new Promise(resolve => {
+    api('api/feature/?filter=categoryId||$eq||' + categoryId + '/','get',{},'administrator')
+    .then((res:ApiResponse) => {
+      if(res.status === "error" || res.status === "login"){
+        this.setLogginState(false);
+        return resolve([]);//vracamo resolve praznog niza 
+      }
+
+      const features: FeatureBaseType[] = res.data.map((item: any) => ({
+        featureId: item.featureId,
+        name: item.name,
+      }));
+
+      resolve(features);
+    })
+  })
+}
+
+  
+
   private getCategories(){
     api('/api/category/', 'get', {}, 'administrator')
     .then((res:ApiResponse) => {
@@ -135,6 +166,38 @@ class AdministratorDashboardArticle extends React.Component {
       visible: newState
     })
     ));
+  }
+
+  private setAddModalFeatureUse(featureId: number, use: boolean){
+       const addFeatures:{featureId: number;use: number;}[] = [...this.state.addModal.features];//pravimo kopiju tog niza
+       for (const feature of addFeatures){
+        if(feature.featureId === featureId){
+          feature.use = use ? 1: 0;
+          break;
+        }
+       }
+
+       this.setState(Object.assign(this.state,
+                     Object.assign(this.state.addModal,{
+                      features: addFeatures,
+                     }),
+                  ));
+  }
+  
+  private setAddModalFeatureValue(featureId: number, value: string){
+    const addFeatures:{featureId: number;value: string;}[] = [...this.state.addModal.features];//pravimo kopiju tog niza
+    for (const feature of addFeatures){
+     if(feature.featureId === featureId){
+       feature.value = value;
+       break;
+     }
+    }
+
+    this.setState(Object.assign(this.state,
+                  Object.assign(this.state.addModal,{
+                   features: addFeatures,
+                  }),
+               ));
   }
 
   private setAddModalStringFieldState(fieldName: string, newValue: string){
@@ -231,6 +294,23 @@ class AdministratorDashboardArticle extends React.Component {
       
  }
 
+ private async addModalCategoryChanged(event: React.ChangeEvent<HTMLSelectElement>){
+    this.setAddModalNumberFieldState('categoryId', event.target.value);
+
+    const features = await this.getFeaturesByCategoryId(this.state.addModal.categoryId);
+    const stateFeatures = features.map(feature=> ({
+         featureId: feature.featureId,
+         name: feature.name,
+         value: '',
+         use: 0,
+    }));
+
+    this.setState(Object.assign(this.state, 
+         Object.assign(this.state.addModal, {
+          feature: stateFeatures,
+         }),
+      ));
+ }
 
  render() {
    if(this.state.isAdministratorLoggedIn === false) {
@@ -322,7 +402,7 @@ class AdministratorDashboardArticle extends React.Component {
                    <Form.Group>
                       <Form.Label htmlFor="add-categoryId">Category</Form.Label>
                       <Form.Control id="add-categoryId" as={"select"} value={ this.state.addModal.categoryId.toString()}
-                                    onChange={(e) => this.setAddModalNumberFieldState('categoryId',e.target.value)}>
+                                    onChange={(e) => this.addModalCategoryChanged(e as any)}>
                                     {
                                       this.state.categories.map(category => (
                                         <option value={ category.categoryId?.toString()}>
@@ -350,6 +430,12 @@ class AdministratorDashboardArticle extends React.Component {
                               
                       </Form.Control>
                    </Form.Group>
+
+                   <div>
+                       { this.state.addModal.features.map(this.printAddModalFeatureInput, this)}
+                   </div>
+
+
                    <Form.Group>
                       <Button variant="primary" onClick={ ()=> this.doAddArticle()}>
                         <FontAwesomeIcon icon={ faPlus}/>Add new article
@@ -363,6 +449,27 @@ class AdministratorDashboardArticle extends React.Component {
 
         </Container>
   );
+ }
+
+ private printAddModalFeatureInput(feature: any){
+   return (
+     <Form.Group>
+        <Row>
+          <Col xs="4" sm="2">
+          <input type="checkbox" value="1" checked={ feature.use === 1}
+              onChange={ (e) => this.setAddModalFeatureUse(feature.featureId, e.target.checked)}/>
+          </Col>
+          <Col xs="8" sm="5">
+                { feature.name }
+          </Col>
+          <Col xs="12" sm="5">
+          <Form.Control type="text" value={ feature.value } 
+                     onChange={ (e) => this.setAddModalFeatureValue( feature.featureId, e.target.value)}/>
+          </Col>
+        </Row>
+        
+      </Form.Group>
+   );
  }
 
  private showAddModal(){

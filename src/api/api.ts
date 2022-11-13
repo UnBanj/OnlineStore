@@ -1,4 +1,3 @@
-import { getRoles } from "@testing-library/react";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { ApiConfig } from "../config/api.config";
 
@@ -165,6 +164,12 @@ export function saveIdentity(role: 'user' | 'administrator', identity: string){
 export function getIdentity(role: 'user' | 'administrator'): string {
     const token = localStorage.getItem('api_identity' + role);
     return 'Bearer' + token;
+}
+
+export function removeTokenData(role: 'user' | 'administrator') {
+    localStorage.removeItem('api_token' + role);
+    localStorage.removeItem('api_refresh_token' + role);
+    localStorage.removeItem('api_identity' + role);
 }
 
 async function refreshToken(role: 'user' | 'administrator'): Promise<string | null>{
